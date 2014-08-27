@@ -6,7 +6,7 @@ var querystring = require('querystring');
 
 function CgiHandler(request, filename, config, callback) {
     setUpCgiEnv(request, filename, config, function(env) {
-        var command = cp.exec(filename, {
+        var command = cp.exec("/usr/local/bin/php-cgi -qC " + config["extensions"][".php"]["iniPath"] + " " + filename, {
             "env": env,
             "timeout": config["timeout"]
         }, function(err, stdout, stderr) {

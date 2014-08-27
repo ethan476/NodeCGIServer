@@ -7,6 +7,11 @@
         ".cgi": {
             "internal": "cgi",
             "mime": "text/html"
+        },
+        ".php": {
+            "internal": "php",
+            "mime": "text/html",
+            "iniPath": "/etc/"
         }
     },
     "indexFile":    "index.html", 
