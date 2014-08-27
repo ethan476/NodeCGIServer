@@ -1,0 +1,23 @@
+{
+  "name" : "NodeCGIServer",
+  "version" : "0.0.1",
+  "main" : "./src/run.js",
+  "author" : {
+    "name" : "Ethan Sattler",
+    "email" : "mcdasethan2@gmail.com"
+  },
+  "keywords" : [ ],
+  "licenses" : {
+    "type" : "none"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "git://github.com/ethan476/NodeCGIServer.git"
+  },
+  "bugs" : {
+    "url" : "http://github.com/ethan476/NodeCGIServer/issues"
+  },
+  "license" : {
+    "type" : "apache20"
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "extensions": {
+        ".html": {
+            "internal": "html",
+            "mime": "text/html"
+        },
+        ".cgi": {
+            "internal": "cgi",
+            "mime": "text/html"
+        }
+    },
+    "indexFile":    "index.html", 
+    "docroot":      "./docroot/",
+    "handlersPath": "./handlers/",
+    "errorPagesPath": "./errors",
+    "timeout": 15000
+}
