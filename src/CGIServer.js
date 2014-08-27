@@ -2,6 +2,7 @@ var fs = require("fs");
 var http = require("http");
 var path = require("path");
 var url = require("url");
+var querystring = require('querystring');
 
 function CGIServer(configurationFile, port) {
     this.config = require(configurationFile);
@@ -9,7 +10,7 @@ function CGIServer(configurationFile, port) {
 
     this.startServer = function() {
         var self = this;
-        http.createServer(function(request, response) {
+        this.server = http.createServer(function(request, response) {
             self.findPath(request, function(err, uri, filename) {
                 if (err) {
                     self.errorPage(request, response, 404);
@@ -26,6 +27,13 @@ function CGIServer(configurationFile, port) {
                 }
             });
         }).listen(this.port);
+        
+        this.server.on('connection', function (socket) {
+            if (typeof this.sockets === "undefined") {
+                this.sockets = new Array();
+            }
+            this.sockets.push(socket);
+        });
     };
 }
 
@@ -111,17 +119,16 @@ CGIServer.prototype.errorPage = function(request, response, code) {
 CGIServer.prototype.findPath = function(request, callback) {
     try {
         var uri = url.parse(request.url).pathname;
-        var filename = path.join(this.config["docroot"], uri);
-
-        if (fs.lstatSync(filename).isDirectory()) {
+        if (fs.lstatSync(path.join(this.config["docroot"], uri)).isDirectory()) {
             uri += this.config["indexFile"];
         }
+        var filename = path.join(this.config["docroot"], uri);
 
         if (!fs.existsSync(filename)) {
-            console.log(uri);
+            console.log("GET " + uri);
             callback(true, uri, filename);
         } else {
-            console.log(uri);
+            console.log("GET " + uri);
             callback(false, uri, filename);
         }
     } catch (err) {
@@ -134,11 +141,60 @@ CGIServer.prototype.listen = function(port) {
     this.startServer();
 };
 
-CGIServer.parseOutputData = function(data, callback) {
-    var headers = data.split(/((\r)?\n(\r)?\n)/)[0];
-    var data = data.substr(headers.length + 1);
-    callback(headers, data);
+CGIServer.prototype.close = function() {
+    this.server.close(function() {
+        for (var i = 0; i < sockets.length; i++) {
+            sockets[i].destroy();
+        }
+    })
 }
+
+CGIServer.parseOutputData = function(filename, data, callback) {
+    var split = data.split(/((\r)?\n(\r)?\n)/);
+    var headerData = split[0];
+
+    var j = 0;
+    for (var i = 0; i < split.length % 4 + 1; i++) {
+        j += split[i].length;
+    }
+
+    var headers = {};
+    var headersSplit = headerData.split(/([^\n:]+):([^\n\r]+)/g);
+    for (var i = 0; i < headersSplit.length; i++) {
+        if (headersSplit.length <= i + 1) {
+            break;
+        }
+        while (headersSplit[i].trim() === "") {
+            i++;
+        }
+        headers[headersSplit[i].trim()] = headersSplit[i + 1];
+        i++;
+    }
+
+    if (typeof headers["Content-type"] === "undefined") {
+        headers["Content-type"] = config["extensions"][path.extname(filename)]["mime"];
+    }
+
+    callback(headers, data.substr(j + split[(split.length % 4)]));
+}
+
+CGIServer.setUpCgiEnv = function(request, filename, config, callback) {
+    env = {};
+    env['QUERY_STRING'] = querystring.stringify(url.parse(request.url, true).query);
+    env['REQUEST_METHOD'] = 'GET';
+    env['DOCUMENT_ROOT'] = config["docroot"];
+    env['REMOTE_ADDRESS'] = request.connection.remoteAddress;
+    env['GATEWAY_INTERFACE'] = 'CGI/1.1';
+    env['SERVER_ADDRESS'] = '0.0.0.0';
+    env['REQUEST_URI'] = filename;
+    env['SCRIPT_NAME'] = path.basename(filename);
+    env['SCRIPT_FILENAME'] = filename;
+    env['SERVER_PROTOCOL'] = "HTTP/1.1";
+    env['SERVER_PORT'] = String(request.socket.localPort);
+    env['REDIRECT_STATUS'] = '200';
+    env['REQUEST_TIME'] = new Date().getTime() / 1000;
+    callback(env);
+};
 
 /* Other Stuff */
 if (typeof String.prototype.startsWith != 'function') {

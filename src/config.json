@@ -12,9 +12,22 @@
             "internal": "php",
             "mime": "text/html",
             "iniPath": "/etc/"
+        },
+        ".ico": {
+            "internal": "html",
+            "mime": "image/x-icon"
+        },
+        ".css": {
+            "internal": "html",
+            "mime": "text/css"
+        }
+        ,
+        ".js": {
+            "internal": "html",
+            "mime": "application/javascript"
         }
     },
-    "indexFile":    "index.html", 
+    "indexFile":    "index.php", 
     "docroot":      "/Users/developer/NetBeansProjects/NodeCGIServer/src/docroot/",
     "handlersPath": "/Users/developer/NetBeansProjects/NodeCGIServer/src/handlers/",
     "errorPagesPath": "/Users/developer/NetBeansProjects/NodeCGIServer/src/errors/",

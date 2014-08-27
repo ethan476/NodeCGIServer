@@ -6,7 +6,9 @@ function HtmlHandler(request, filename, config, callback) {
         if (err) {
             callback(err);
         } else {
-            callback(false, config["extensions"][path.extname(filename)], data, 200, "binary");
+            callback(false, {
+                "Content-type": config["extensions"][path.extname(filename)]["mime"]
+            }, data, 200, "binary");
         }
     });
 }
