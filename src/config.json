@@ -15,8 +15,8 @@
         }
     },
     "indexFile":    "index.html", 
-    "docroot":      "./docroot/",
-    "handlersPath": "./handlers/",
-    "errorPagesPath": "./errors",
+    "docroot":      "/Users/developer/NetBeansProjects/NodeCGIServer/src/docroot/",
+    "handlersPath": "/Users/developer/NetBeansProjects/NodeCGIServer/src/handlers/",
+    "errorPagesPath": "/Users/developer/NetBeansProjects/NodeCGIServer/src/errors/",
     "timeout": 15000
 }

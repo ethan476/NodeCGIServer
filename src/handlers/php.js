@@ -6,7 +6,7 @@ var querystring = require('querystring');
 
 function CgiHandler(request, filename, config, callback) {
     setUpCgiEnv(request, filename, config, function(env) {
-        var command = cp.exec("/usr/local/bin/php-cgi -qC " + config["extensions"][".php"]["iniPath"] + " " + filename, {
+        var command = cp.exec("/usr/local/bin/php-cgi -q -c " + config["extensions"][".php"]["iniPath"] + " " + filename, {
             "env": env,
             "timeout": config["timeout"]
         }, function(err, stdout, stderr) {
@@ -14,13 +14,9 @@ function CgiHandler(request, filename, config, callback) {
                 console.log(err);
                 callback(err);
             } else {
-                /* Hack! */
-                if (stdout.indexOf("X-Powered-By:") > -1) {
-                    stdout = stdout.substr(stdout.indexOf('\r\n\r\n') + 4);
-                    callback(false, stdout, 200);
-                } else {
-                    callback(false, stdout, 200);
-                }
+                CGIServer.parseOutputData(stdout, function(headers, data) {
+                    callback(false, headers, data, 200);
+                });
             }
         });
     });

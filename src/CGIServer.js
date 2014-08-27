@@ -14,13 +14,11 @@ function CGIServer(configurationFile, port) {
                 if (err) {
                     self.errorPage(request, response, 404);
                 } else {
-                    self.processRequest(request, filename, function(err, data, resp, type) {
+                    self.processRequest(request, filename, function(err, headers, data, resp, type) {
                         if (err) {
                             self.errorPage(request, response, 500);
                         } else {
-                            response.writeHead(resp, {
-                                'Content-type': self.config["extensions"][path.extname(filename)]['mime']
-                            });
+                            response.writeHead(resp, headers);
                             response.write(data, type);
                             response.end();
                         }
@@ -38,11 +36,11 @@ CGIServer.prototype.processRequest = function(request, filename, callback) {
         fs.exists(subHandlerPath, function(exists) {
             if (exists) {
                 var subHandler = require(subHandlerPath);
-                subHandler.handler(request, filename, self.config, function(err, data, resp, type) {
+                subHandler.handler(request, filename, self.config, function(err, headers, data, resp, type) {
                     if (err) {
-                        callback(true);
+                        callback(true, headers, data, resp, type);
                     } else {
-                        callback(false, data, resp, type);
+                        callback(false, headers, data, resp, type);
                     }
                 });
             } else {
@@ -88,13 +86,11 @@ CGIServer.prototype.errorPage = function(request, response, code) {
         fs.readdir(self.config["errorPagesPath"], function(err, files) {
             for (var i = 0; i < files.length; i++) {
                 if (files[i].startsWith(String(code))) {
-                    self.processRequest(request, self.config["errorPagesPath"] + "/" + files[i], function(err, data, resp, type) {
+                    self.processRequest(request, self.config["errorPagesPath"] + "/" + files[i], function(err, headers, data, resp, type) {
                         if (err) {
                             self.errorPage(request, response, 500);
                         } else {
-                            response.writeHead(resp, {
-                                'Content-type': self.config["extensions"][path.extname(files[i])]['mime']
-                            });
+                            response.writeHead(code, headers);
                             response.write(data, type);
                             response.end();
                         }
@@ -114,14 +110,20 @@ CGIServer.prototype.errorPage = function(request, response, code) {
 
 CGIServer.prototype.findPath = function(request, callback) {
     try {
-        var uri = this.config["docroot"] + url.parse(request.url).pathname;
-        var filename = path.join(process.cwd(), uri);
+        var uri = url.parse(request.url).pathname;
+        var filename = path.join(this.config["docroot"], uri);
 
         if (fs.lstatSync(filename).isDirectory()) {
-            filename += this.config["indexFile"];
             uri += this.config["indexFile"];
         }
-        callback(false, uri, filename);
+
+        if (!fs.existsSync(filename)) {
+            console.log(uri);
+            callback(true, uri, filename);
+        } else {
+            console.log(uri);
+            callback(false, uri, filename);
+        }
     } catch (err) {
         callback(err, uri, filename);
     }
@@ -131,6 +133,12 @@ CGIServer.prototype.listen = function(port) {
     this.port = port;
     this.startServer();
 };
+
+CGIServer.parseOutputData = function(data, callback) {
+    var headers = data.split(/((\r)?\n(\r)?\n)/)[0];
+    var data = data.substr(headers.length + 1);
+    callback(headers, data);
+}
 
 /* Other Stuff */
 if (typeof String.prototype.startsWith != 'function') {
