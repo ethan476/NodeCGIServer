@@ -154,9 +154,9 @@ CGIServer.parseOutputData = function(filename, data, callback) {
     var headerData = split[0];
 
     var j = 0;
-    for (var i = 0; i < split.length % 4 + 1; i++) {
+    /*for (var i = 0; i < split.length % 4 + 1; i++) {
         j += split[i].length;
-    }
+    }*/
 
     var headers = {};
     var headersSplit = headerData.split(/([^\n:]+):([^\n\r]+)/g);
@@ -172,7 +172,7 @@ CGIServer.parseOutputData = function(filename, data, callback) {
     }
 
     if (typeof headers["Content-type"] === "undefined") {
-        headers["Content-type"] = config["extensions"][path.extname(filename)]["mime"];
+        headers["Content-type"] = "text/html"///config["extensions"][path.extname(filename)]["mime"];
     }
 
     callback(headers, data.substr(j + split[(split.length % 4)]));

@@ -27,9 +27,9 @@
             "mime": "application/javascript"
         }
     },
-    "indexFile":    "index.php", 
-    "docroot":      "/Users/developer/NetBeansProjects/NodeCGIServer/src/docroot/",
-    "handlersPath": "/Users/developer/NetBeansProjects/NodeCGIServer/src/handlers/",
-    "errorPagesPath": "/Users/developer/NetBeansProjects/NodeCGIServer/src/errors/",
+    "indexFile":    "index.cgi", 
+    "docroot":      "./docroot/",
+    "handlersPath": "./handlers/",
+    "errorPagesPath": "./errors/",
     "timeout": 15000
 }
